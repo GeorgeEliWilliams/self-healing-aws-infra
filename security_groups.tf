@@ -37,3 +37,13 @@ resource "aws_vpc_security_group_egress_rule" "all_outbound" {
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
 }
+
+# --- Healthcheck NodePort from your IP only ---
+resource "aws_vpc_security_group_ingress_rule" "healthcheck_nodeport" {
+  security_group_id = aws_security_group.k3s_sg.id
+  description        = "Allow healthcheck NodePort traffic from my IP"
+  from_port          = 30080
+  to_port             = 30080
+  ip_protocol         = "tcp"
+  cidr_ipv4           = var.my_ip
+}
