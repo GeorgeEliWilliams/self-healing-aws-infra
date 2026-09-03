@@ -20,7 +20,7 @@ resource "aws_key_pair" "k3s_key" {
 
 resource "aws_instance" "k3s_node" {
   ami                    = data.aws_ami.al2023.id
-  instance_type          = "t3.small"
+  instance_type          = "t3.medium"
   subnet_id              = aws_subnet.k3s_public_subnet.id
   vpc_security_group_ids = [aws_security_group.k3s_sg.id]
   key_name               = aws_key_pair.k3s_key.key_name
