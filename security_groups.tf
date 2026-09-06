@@ -47,3 +47,12 @@ resource "aws_vpc_security_group_ingress_rule" "healthcheck_nodeport" {
   ip_protocol         = "tcp"
   cidr_ipv4           = var.my_ip
 }
+
+resource "aws_vpc_security_group_ingress_rule" "grafana_nodeport" {
+  security_group_id = aws_security_group.k3s_sg.id
+  description        = "Allow Grafana NodePort traffic from my IP"
+  from_port          = 30310
+  to_port             = 30310
+  ip_protocol         = "tcp"
+  cidr_ipv4           = var.my_ip
+}
