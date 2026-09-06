@@ -18,6 +18,9 @@ prometheus:
       limits:
         memory: 512Mi
     retention: 6h
+  service:
+    type: NodePort
+    nodePort: 30320
 
 alertmanager:
   alertmanagerSpec:
@@ -25,6 +28,9 @@ alertmanager:
       requests:
         memory: 64Mi
         cpu: 50m
+  service:
+    type: NodePort
+    nodePort: 30330
 
 # Disable components we don't need for a single-node learning cluster
 kubeStateMetrics:

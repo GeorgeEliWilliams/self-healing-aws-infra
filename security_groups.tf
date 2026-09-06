@@ -48,11 +48,32 @@ resource "aws_vpc_security_group_ingress_rule" "healthcheck_nodeport" {
   cidr_ipv4           = var.my_ip
 }
 
+# --- Grafana NodePort from your IP only ---
 resource "aws_vpc_security_group_ingress_rule" "grafana_nodeport" {
   security_group_id = aws_security_group.k3s_sg.id
   description        = "Allow Grafana NodePort traffic from my IP"
   from_port          = 30310
   to_port             = 30310
+  ip_protocol         = "tcp"
+  cidr_ipv4           = var.my_ip
+}
+
+# --- Prometheus NodePort from your IP only ---
+resource "aws_vpc_security_group_ingress_rule" "prometheus_nodeport" {
+  security_group_id = aws_security_group.k3s_sg.id
+  description        = "Allow Prometheus NodePort traffic from my IP"
+  from_port          = 30320
+  to_port             = 30320
+  ip_protocol         = "tcp"
+  cidr_ipv4           = var.my_ip
+}
+
+# --- Alertmanager NodePort from your IP only ---
+resource "aws_vpc_security_group_ingress_rule" "alertmanager_nodeport" {
+  security_group_id = aws_security_group.k3s_sg.id
+  description        = "Allow Alertmanager NodePort traffic from my IP"
+  from_port          = 30330
+  to_port             = 30330
   ip_protocol         = "tcp"
   cidr_ipv4           = var.my_ip
 }
