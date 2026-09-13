@@ -7,3 +7,8 @@ output "instance_id" {
   description = "Instance ID of the k3s node"
   value       = aws_instance.k3s_node.id
 }
+
+output "sns_topic_arn" {
+  description = "ARN of the SNS topic for cluster alerts"
+  value       = aws_sns_topic.alerts.arn
+}
