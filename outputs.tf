@@ -12,3 +12,8 @@ output "sns_topic_arn" {
   description = "ARN of the SNS topic for cluster alerts"
   value       = aws_sns_topic.alerts.arn
 }
+
+output "lambda_function_url" {
+  description = "HTTPS endpoint for the alert notifier Lambda"
+  value       = aws_lambda_function_url.alert_notifier_url.function_url
+}
