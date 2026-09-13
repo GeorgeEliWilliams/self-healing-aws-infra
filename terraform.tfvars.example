@@ -1,1 +1,2 @@
 my_ip = "0.0.0.0/32"  # replace with your own public IP
+alerts_email = "you@example.com"
