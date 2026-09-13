@@ -66,3 +66,19 @@ resource "aws_lambda_function_url" "alert_notifier_url" {
   function_name      = aws_lambda_function.alert_notifier.function_name
   authorization_type = "NONE"
 }
+
+# Permissions for the Lambda Function URL to allow public access
+resource "aws_lambda_permission" "allow_public_function_url" {
+  statement_id           = "AllowPublicFunctionUrl"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.alert_notifier.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
+}
+
+resource "aws_lambda_permission" "allow_public_invoke" {
+  statement_id  = "AllowPublicInvokeViaFunctionUrl"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.alert_notifier.function_name
+  principal     = "*"
+}
