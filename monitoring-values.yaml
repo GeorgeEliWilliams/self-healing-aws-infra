@@ -23,7 +23,7 @@ prometheus:
     nodePort: 30320
 
 alertmanager:
-  alertmanagerSpec:
+  alertmanagerSpec: 
     resources:
       requests:
         memory: 64Mi
