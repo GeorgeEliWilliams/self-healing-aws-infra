@@ -173,3 +173,11 @@ resource "aws_lambda_permission" "remediator_public_invoke" {
   principal              = "*"
   function_url_auth_type = "NONE"
 }
+
+# Permissions for the remediation Lambda to be invoked publicly
+resource "aws_lambda_permission" "remediator_public_invoke_function" {
+  statement_id  = "AllowPublicInvokeFunction"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.remediator.function_name
+  principal     = "*"
+}
