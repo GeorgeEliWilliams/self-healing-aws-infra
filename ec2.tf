@@ -35,9 +35,16 @@ resource "aws_instance" "k3s_node" {
   }
 
   user_data = <<-EOF
-    #!/bin/bash
-    curl -sfL https://get.k3s.io | sh -
-  EOF
+  #!/bin/bash
+
+  # Install and start SSM Agent
+  dnf install -y amazon-ssm-agent
+  systemctl enable amazon-ssm-agent
+  systemctl start amazon-ssm-agent
+
+  # Install k3s
+  curl -sfL https://get.k3s.io | sh -
+EOF
 
   tags = {
     Name = "k3s-node"
