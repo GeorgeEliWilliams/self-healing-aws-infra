@@ -82,3 +82,94 @@ resource "aws_lambda_permission" "allow_public_invoke" {
   function_name = aws_lambda_function.alert_notifier.function_name
   principal     = "*"
 }
+
+
+
+# Remediation Lambda function and its IAM role/policy
+
+#  IAM role the remediation Lambda assumes 
+resource "aws_iam_role" "lambda_remediator" {
+  name = "lambda-remediator-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM policy for the remediation Lambda to send SSM commands and publish to SNS
+resource "aws_iam_role_policy" "lambda_remediation_permissions" {
+  name = "lambda-remediation-policy"
+  role = aws_iam_role.lambda_remediator.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "ssm:SendCommand"
+        Effect = "Allow"
+        Resource = [
+          "arn:aws:ec2:eu-west-1:851725234293:instance/${aws_instance.k3s_node.id}",
+          "arn:aws:ssm:eu-west-1::document/AWS-RunShellScript"
+        ]
+      },
+      {
+        Action   = "sns:Publish"
+        Effect   = "Allow"
+        Resource = aws_sns_topic.alerts.arn
+      }
+    ]
+  })
+}
+
+# Attach the basic execution role to the remediation Lambda
+resource "aws_iam_role_policy_attachment" "lambda_remediator_basic_execution" {
+  role       = aws_iam_role.lambda_remediator.id
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+#  Package the Python file into a zip 
+data "archive_file" "remediate_zip" {
+  type        = "zip"
+  source_file = "${path.module}/lambda/remediate.py"
+  output_path = "${path.module}/lambda/remediate.zip"
+}
+
+resource "aws_lambda_function" "remediator" {
+  function_name    = "alert-remediator"
+  role             = aws_iam_role.lambda_remediator.arn
+  handler          = "remediate.lambda_handler"
+  runtime          = "python3.12"
+  filename         = data.archive_file.remediate_zip.output_path
+  source_code_hash = data.archive_file.remediate_zip.output_base64sha256
+
+  environment {
+    variables = {
+      INSTANCE_ID   = aws_instance.k3s_node.id
+      SNS_TOPIC_ARN = aws_sns_topic.alerts.arn
+    }
+  }
+}
+
+# Function URL for the remediation Lambda
+resource "aws_lambda_function_url" "remediator_url" {
+  function_name      = aws_lambda_function.remediator.function_name
+  authorization_type = "NONE"
+}
+
+# Permissions for the remediation Lambda Function URL to allow public access
+resource "aws_lambda_permission" "remediator_public_invoke" {
+  statement_id           = "AllowPublicInvokeFunctionUrl"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = aws_lambda_function.remediator.function_name
+  principal              = "*"
+  function_url_auth_type = "NONE"
+}
