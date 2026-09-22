@@ -23,35 +23,52 @@ prometheus:
     nodePort: 30320
 
 alertmanager:
-  alertmanagerSpec: 
+  alertmanagerSpec:
     resources:
       requests:
         memory: 64Mi
         cpu: 50m
+
   service:
     type: NodePort
     nodePort: 30330
+
   config:
     global:
       resolve_timeout: 5m
+
     route:
       receiver: 'lambda-webhook'
       group_by: ['alertname']
       group_wait: 10s
       group_interval: 10s
       repeat_interval: 1h
+
       routes:
         - receiver: 'null'
           matchers:
             - alertname = "Watchdog"
+
+        - receiver: 'lambda-remediator'
+          matchers:
+            - alertname = "PodCrashLooping"
+          continue: true
+
     receivers:
       - name: 'lambda-webhook'
         webhook_configs:
           - url: 'https://zru7dnh5m5wtxlh33pk2ymlxpi0gbrok.lambda-url.eu-west-1.on.aws/'
             send_resolved: true
+
+      - name: 'lambda-remediator'
+        webhook_configs:
+          - url: 'https://drkup3qlwihxmjucxag3br4prq0zfanl.lambda-url.eu-west-1.on.aws/'
+            send_resolved: true
+
       - name: 'null'
 
 kubeStateMetrics:
   enabled: true
+
 nodeExporter:
   enabled: true
