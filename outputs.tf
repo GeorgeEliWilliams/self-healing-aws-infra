@@ -33,3 +33,9 @@ output "ecr_repository_url" {
   description = "ECR repository URI for the healthcheck app"
   value       = aws_ecr_repository.healthcheck_app.repository_url
 }
+
+# Output the ARN of the IAM role assumed by GitHub Actions via OIDC
+output "github_actions_role_arn" {
+  description = "ARN of the IAM role GitHub Actions assumes via OIDC"
+  value       = aws_iam_role.github_actions.arn
+}
