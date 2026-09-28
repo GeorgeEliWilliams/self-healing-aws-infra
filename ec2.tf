@@ -75,6 +75,12 @@ resource "aws_iam_role_policy_attachment" "ssm_managed_instance" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# Attach the AmazonEC2ContainerRegistryReadOnly policy to the EC2 IAM role
+resource "aws_iam_role_policy_attachment" "ecr_read_only" {
+  role       = aws_iam_role.ec2_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
 # Create an instance profile for the EC2 instances to use the IAM role
 resource "aws_iam_instance_profile" "ec2_ssm_profile" {
   name = "k3s-node-ssm-profile"
