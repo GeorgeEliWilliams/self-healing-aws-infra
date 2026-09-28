@@ -27,3 +27,9 @@ output "remediator_function_url" {
   description = "HTTPS endpoint for the auto-remediation Lambda"
   value       = aws_lambda_function_url.remediator_url.function_url
 }
+
+# Output the ECR repository URL for the healthcheck app
+output "ecr_repository_url" {
+  description = "ECR repository URI for the healthcheck app"
+  value       = aws_ecr_repository.healthcheck_app.repository_url
+}
