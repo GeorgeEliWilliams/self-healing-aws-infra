@@ -1,44 +1,55 @@
-name: Build and Push to ECR
-
+name: Build, Push and Deploy
 
 on:
-    push:
-        branches:
-        - main
-        paths:
-            - 'Dockerfile'
-            - 'app.py'
-            - 'requirements.txt'
-
+  push:
+    branches:
+      - main
+    paths:
+      - "Dockerfile"
+      - "app.py"
+      - "requirements.txt"
+      - ".github/workflows/build-and-push.yaml"
 
 permissions:
-    contents: read
-    id-token: write
-
-
+  contents: read
+  id-token: write
 
 jobs:
-    build-and-push:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+  build-and-push:
+    runs-on: ubuntu-latest
 
-            - name: Configure AWS credentials via OIDC
-              uses: aws-actions/configure-aws-credentials@v4
-              with:
-               role-to-assume: arn:aws:iam::851725234293:role/github-actions-ecr-push-role
-               aws-region: eu-west-1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-            - name: Log in to Amazon ECR
-              id: ecr-login
-              uses: aws-actions/amazon-ecr-login@v2
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::851725234293:role/github-actions-ecr-push-role
+          aws-region: eu-west-1
 
-            - name: Build, tag, and push image
-              env:
-                ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-                ECR_REPOSITORY: healthcheck-app
-                IMAGE_TAG: ${{ github.sha }}
-              run: |
-               docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-               docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          ECR_REPOSITORY: healthcheck-app
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Deploy new image via SSM
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          ECR_REPOSITORY: healthcheck-app
+          IMAGE_TAG: ${{ github.sha }}
+          INSTANCE_ID: i-0e5efb81d299c9944
+        run: |
+          aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[\"export KUBECONFIG=/home/ec2-user/.kube/config && kubectl set image deployment/healthcheck-app healthcheck-app=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n default\"]" \
+            --region eu-west-1
