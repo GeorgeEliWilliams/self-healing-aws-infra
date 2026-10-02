@@ -14,7 +14,6 @@ spec:
     spec:
       containers:
         - name: healthcheck-app
-          image: docker.io/library/healthcheck-app:v1
-          imagePullPolicy: Never
+          image: 851725234293.dkr.ecr.eu-west-1.amazonaws.com/healthcheck-app:v1
           ports:
             - containerPort: 8080
