@@ -1,3 +1,7 @@
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+
 resource "aws_iam_openid_connect_provider" "github" {
   url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
@@ -58,6 +62,26 @@ resource "aws_iam_role_policy" "github_actions_ecr_push" {
           "ecr:PutImage"
         ]
         Resource = aws_ecr_repository.healthcheck_app.arn
+      }
+    ]
+  })
+}
+
+# IAM policy for the GitHub Actions role to send SSM commands to the EC2 instance
+resource "aws_iam_role_policy" "github_actions_ssm_deploy" {
+  name = "github-actions-ssm-deploy-policy"
+  role = aws_iam_role.github_actions.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "ssm:SendCommand"
+        Resource = [
+          "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/${aws_instance.k3s_node.id}",
+          "arn:aws:ssm:eu-west-1::document/AWS-RunShellScript"
+        ]
       }
     ]
   })
