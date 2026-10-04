@@ -10,7 +10,7 @@ This project was built to go beyond simply deploying an application. The goal wa
 
 ## Architecture
 
-![Architecture Diagram](docs/architecture.png)
+![Self-Healing AWS Infrastructure Architecture](docs/architecture.png)
 
 ### High-Level Flow
 
