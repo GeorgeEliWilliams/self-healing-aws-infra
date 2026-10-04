@@ -12,47 +12,6 @@ This project was built to go beyond simply deploying an application. The goal wa
 
 ![Self-Healing AWS Infrastructure Architecture](docs/architecture.png)
 
-### High-Level Flow
-
-```text
-GitHub Push
-    │
-    ▼
-GitHub Actions
-    │
-    ├── OIDC → AWS
-    │
-    ├── Build Docker image
-    │
-    ├── Push image to ECR (tagged with commit SHA)
-    │
-    └── SSM SendCommand
-              │
-              ▼
-         EC2 / k3s
-              │
-              ▼
-      healthcheck-app
-          (2 replicas)
-              │
-              ▼
-         Prometheus
-              │
-        ┌─────┴─────┐
-        ▼           ▼
-     Grafana    Alertmanager
-                    │
-             ┌──────┴──────┐
-             ▼             ▼
-      Notifier Lambda   Remediator Lambda
-             │             │
-             ▼             ▼
-            SNS      SSM SendCommand
-             │             │
-             ▼             ▼
-           Email      kubectl rollout
-                         restart
-```
 
 The infrastructure runs in **AWS eu-west-1** inside a custom VPC. A single EC2 instance hosts a lightweight k3s cluster containing the application and monitoring stack.
 
