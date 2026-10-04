@@ -643,12 +643,3 @@ The live AWS environment is intentionally destroyed when not being used to avoid
 
 The repository contains the Terraform, Kubernetes manifests, monitoring configuration, Lambda automation, and CI/CD workflow required to reproduce the project.
 
----
-
-## Author
-
-**George Williams**
-
-Cloud / DevOps Engineer
-
-Built as a self-directed project to deepen practical experience with AWS infrastructure, Kubernetes operations, observability, CI/CD, incident response, and infrastructure automation.
